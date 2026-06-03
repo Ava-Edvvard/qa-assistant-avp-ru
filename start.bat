@@ -8,9 +8,9 @@ echo ===================================================
 echo.
 
 :: 0. Проверка занятости портов
-netstat -ano | findstr LISTENING | findstr :8000 >nul 2>&1
+netstat -ano | findstr LISTENING | findstr /c:":8000 " >nul 2>&1
 if %errorlevel% equ 0 goto ERR_PORT_IN_USE
-netstat -ano | findstr LISTENING | findstr :5173 >nul 2>&1
+netstat -ano | findstr LISTENING | findstr /c:":5173 " >nul 2>&1
 if %errorlevel% equ 0 goto ERR_PORT_IN_USE
 
 :: 1. Проверка Python
