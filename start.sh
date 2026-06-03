@@ -8,6 +8,23 @@ echo "      QA-Assistant — Автоматический запуск"
 echo "==================================================="
 echo ""
 
+# 0. Проверка занятости портов
+if command -v lsof &>/dev/null; then
+    if lsof -Pi :8000 -sTCP:LISTEN -t &>/dev/null || lsof -Pi :5173 -sTCP:LISTEN -t &>/dev/null; then
+        echo "[ERROR] Порты 8000 или 5173 уже используются!"
+        echo "Возможно, платформа QA-Assistant уже запущена в другом терминале."
+        echo ""
+        exit 1
+    fi
+elif command -v netstat &>/dev/null; then
+    if netstat -an | grep -E "8000|5173" | grep -i "listen" &>/dev/null; then
+        echo "[ERROR] Порты 8000 или 5173 уже используются!"
+        echo "Возможно, платформа QA-Assistant уже запущена в другом терминале."
+        echo ""
+        exit 1
+    fi
+fi
+
 # 1. Проверка Python
 if command -v python &> /dev/null && python --version &> /dev/null; then
     PYTHON_CMD="python"

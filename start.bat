@@ -7,6 +7,12 @@ echo       QA-Assistant — Автоматический запуск
 echo ===================================================
 echo.
 
+:: 0. Проверка занятости портов
+netstat -ano | findstr LISTENING | findstr :8000 >nul 2>&1
+if %errorlevel% equ 0 goto ERR_PORT_IN_USE
+netstat -ano | findstr LISTENING | findstr :5173 >nul 2>&1
+if %errorlevel% equ 0 goto ERR_PORT_IN_USE
+
 :: 1. Проверка Python
 python --version >nul 2>&1
 if errorlevel 1 goto ERR_PYTHON
@@ -141,5 +147,13 @@ exit /b 1
 :ERR_NPM_INSTALL
 echo [ERROR] Ошибка установки npm-зависимостей!
 cd ..
+pause
+exit /b 1
+
+:ERR_PORT_IN_USE
+echo [ERROR] Порты 8000 или 5173 уже используются!
+echo Возможно, платформа QA-Assistant уже запущена в другом окне.
+echo Пожалуйста, закройте запущенную копию или завершите процессы Node.js/Python, занимающие эти порты.
+echo.
 pause
 exit /b 1
