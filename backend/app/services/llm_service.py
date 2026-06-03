@@ -1,11 +1,39 @@
 import json
 import logging
+import time
+import threading
 from typing import List, Optional
 from openai import OpenAI
 from app.core.config import settings
 from app.models.schemas import Requirement, ClarifyingQuestion, TestScenario, UserAnswer
 
 logger = logging.getLogger("app.services.llm_service")
+
+class RateLimiter:
+    def __init__(self, max_calls: int = 3, period: float = 60.0):
+        self.max_calls = max_calls
+        self.period = period
+        self.calls = []
+        self.lock = threading.Lock()
+
+    def wait_if_needed(self):
+        with self.lock:
+            now = time.time()
+            # Keep only timestamps from the last 60 seconds
+            self.calls = [t for t in self.calls if now - t < self.period]
+            
+            if len(self.calls) >= self.max_calls:
+                oldest_call = self.calls[0]
+                sleep_time = self.period - (now - oldest_call)
+                if sleep_time > 0:
+                    logger.warning(f"Rate limit reached (3 calls/min). Delaying request, sleeping for {sleep_time:.2f} seconds...")
+                    time.sleep(sleep_time)
+                # Recalculate now after sleeping
+                now = time.time()
+                self.calls = [t for t in self.calls if now - t < self.period]
+            
+            self.calls.append(now)
+
 
 class LLMService:
     def __init__(self):
@@ -20,6 +48,9 @@ class LLMService:
             self.client = None
             self.is_mock = True
             logger.warning("Using Mock LLM responses. Configure OPENAI_API_KEY in .env to use real OpenAI API.")
+            
+        self.rate_limiter = RateLimiter(max_calls=3, period=60.0)
+
 
     def parse_requirements(self, text: str, additional_info: Optional[str] = None) -> List[Requirement]:
         """
@@ -27,6 +58,9 @@ class LLMService:
         """
         if self.is_mock:
             return self._mock_parse_requirements(text, additional_info)
+            
+        self.rate_limiter.wait_if_needed()
+
             
         prompt = f"""
         Analyze the following user requirements and optional additional info.
@@ -67,6 +101,9 @@ class LLMService:
         if self.is_mock:
             return self._mock_generate_questions(requirements)
 
+        self.rate_limiter.wait_if_needed()
+
+
         req_list_str = "\n".join([f"- {r.id}: {r.description}" for r in requirements])
         prompt = f"""
         Act as an expert QA engineer. Review the following requirements and find any potential ambiguities, missing details, or edge cases.
@@ -102,6 +139,9 @@ class LLMService:
         """
         if self.is_mock:
             return self._mock_generate_scenarios(requirements, answers)
+
+        self.rate_limiter.wait_if_needed()
+
 
         req_str = "\n".join([f"- {r.id}: {r.description}" for r in requirements])
         ans_str = "\n".join([f"- Вопрос: {a.question} | Ответ: {a.answer}" for a in answers])
@@ -160,6 +200,9 @@ class LLMService:
         """
         if self.is_mock:
             return self._mock_compare_scenarios(old_text, new_cases)
+
+        self.rate_limiter.wait_if_needed()
+
 
         new_cases_str = ""
         for tc in new_cases:
