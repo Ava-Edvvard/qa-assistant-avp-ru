@@ -21,7 +21,19 @@ echo.
 :: 3. Настройка виртуального окружения Python
 echo [INFO] Шаг 1: Настройка бэкенда (Python venv)...
 if exist "backend\venv" goto VENV_EXISTS
-echo [INFO] Виртуальное окружение не найдено. Создание venv...
+echo [INFO] Виртуальное окружение не найдено.
+
+:: Проверяем, установлен ли uv глобально
+call uv --version >nul 2>&1
+if errorlevel 1 goto VENV_STANDARD
+
+echo [INFO] Обнаружен глобальный uv. Создание venv через uv...
+call uv venv backend\venv
+if errorlevel 1 goto ERR_VENV
+goto VENV_EXISTS
+
+:VENV_STANDARD
+echo [INFO] Создание стандартного venv (python -m venv)...
 python -m venv backend\venv
 if errorlevel 1 goto ERR_VENV
 :VENV_EXISTS
@@ -29,9 +41,28 @@ if errorlevel 1 goto ERR_VENV
 :: 4. Установка зависимостей бэкенда
 echo [INFO] Шаг 2: Установка зависимостей бэкенда...
 call backend\venv\Scripts\activate
+
+:: Проверяем, установлен ли uv (глобально или внутри venv)
+call uv --version >nul 2>&1
+if not errorlevel 1 goto UV_INSTALL_REQS
+
+:: Если uv нет, пробуем установить его локально в venv для ускорения
+echo [INFO] Установка uv в виртуальное окружение для ускорения сборки...
 python -m pip install --upgrade pip >nul 2>&1
+pip install uv >nul 2>&1
+if errorlevel 1 goto PIP_FALLBACK
+
+:UV_INSTALL_REQS
+echo [INFO] Установка зависимостей через uv pip (быстрый режим)...
+call uv pip install -r backend\requirements.txt
+if errorlevel 1 goto ERR_PIP
+goto PIP_EXISTS
+
+:PIP_FALLBACK
+echo [INFO] Установка зависимостей через стандартный pip (может занять время)...
 pip install -r backend\requirements.txt
 if errorlevel 1 goto ERR_PIP
+:PIP_EXISTS
 
 :: 5. Проверка наличия файла .env
 if exist "backend\.env" goto ENV_EXISTS

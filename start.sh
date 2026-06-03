@@ -31,8 +31,14 @@ echo ""
 # 3. Настройка виртуального окружения Python
 echo "[INFO] Шаг 1: Настройка бэкенда (Python venv)..."
 if [ ! -d "backend/venv" ]; then
-    echo "[INFO] Виртуальное окружение не найдено. Создание venv..."
-    python3 -m venv backend/venv
+    echo "[INFO] Виртуальное окружение не найдено."
+    if command -v uv &>/dev/null; then
+        echo "[INFO] Обнаружен глобальный uv. Создание venv через uv..."
+        uv venv backend/venv
+    else
+        echo "[INFO] Создание стандартного venv (python3 -m venv)..."
+        python3 -m venv backend/venv
+    fi
     if [ $? -ne 0 ]; then
         echo "[ERROR] Не удалось создать виртуальное окружение Python!"
         exit 1
@@ -42,8 +48,22 @@ fi
 # 4. Установка зависимостей бэкенда
 echo "[INFO] Шаг 2: Установка зависимостей бэкенда..."
 source backend/venv/bin/activate
-python3 -m pip install --upgrade pip &> /dev/null
-pip install -r backend/requirements.txt
+
+if command -v uv &>/dev/null; then
+    echo "[INFO] Установка зависимостей через uv pip (быстрый режим)..."
+    uv pip install -r backend/requirements.txt
+else
+    echo "[INFO] Попытка локальной установки uv для ускорения..."
+    python3 -m pip install --upgrade pip &> /dev/null
+    pip install uv &> /dev/null
+    if [ $? -eq 0 ] && [ -f "backend/venv/bin/uv" ]; then
+        echo "[INFO] Локальный uv установлен. Установка зависимостей через uv..."
+        backend/venv/bin/uv pip install -r backend/requirements.txt
+    else
+        echo "[INFO] Установка зависимостей через стандартный pip..."
+        pip install -r backend/requirements.txt
+    fi
+fi
 if [ $? -ne 0 ]; then
     echo "[ERROR] Ошибка установки Python-зависимостей!"
     exit 1
