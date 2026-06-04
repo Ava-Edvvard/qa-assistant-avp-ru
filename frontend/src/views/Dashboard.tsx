@@ -43,7 +43,7 @@ export const Dashboard: React.FC = () => {
           setLlmModel(list[0]);
         }
       } else {
-        setModelsError('Сервер вернул пустой список моделей');
+        setModelsError('Список моделей недоступен — введите название модели вручную.');
       }
     } catch (err: any) {
       setModelsError(err.message || 'Не удалось загрузить список моделей. Проверьте правильность ключа и URL.');
@@ -201,7 +201,14 @@ export const Dashboard: React.FC = () => {
               </div>
 
               {modelsError && (
-                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--danger)', fontSize: '0.75rem', marginTop: '4px' }}>
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  color: modelsError.includes('недоступен') ? '#856404' : 'var(--danger)',
+                  fontSize: '0.75rem',
+                  marginTop: '4px'
+                }}>
                   <AlertCircle size={14} />
                   <span>{modelsError}</span>
                 </div>

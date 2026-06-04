@@ -25,6 +25,7 @@ async def get_llm_info():
 async def list_models(payload: ModelsRequest):
     """
     Queries the dynamic LLM provider for available models.
+    Returns empty list if the provider does not support model listing (e.g. 404).
     """
     try:
         if payload.provider == "gemini":
@@ -39,6 +40,11 @@ async def list_models(payload: ModelsRequest):
         model_ids = [m.id for m in response.data]
         return ModelsResponse(models=model_ids)
     except Exception as e:
+        err_str = str(e).lower()
+        # If the endpoint simply doesn't exist (404) or is not implemented,
+        # return an empty list so the user can type the model name manually.
+        if "404" in err_str or "not found" in err_str or "not implemented" in err_str:
+            return ModelsResponse(models=[])
         raise HTTPException(status_code=400, detail=f"Ошибка получения списка моделей: {str(e)}")
 
 @router.post("/generate-questions", response_model=QuestionsResponse)
