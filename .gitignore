@@ -29,7 +29,5 @@ out/
 *.swp
 
 # Markdown documentation
-*.md
 !README.md
-docs/
 
