@@ -166,7 +166,7 @@ export const Stage4TestScenarios: React.FC = () => {
                 key={sc.id} 
                 className="glass-panel" 
                 style={{ 
-                  overflow: 'hidden', 
+                  overflow: 'visible', 
                   borderLeft: `3px solid ${sc.priority === 'П1' ? 'var(--danger)' : sc.priority === 'П2' ? 'var(--warning)' : 'var(--primary)'}` 
                 }}
               >
@@ -192,21 +192,30 @@ export const Stage4TestScenarios: React.FC = () => {
                     
                     {sc.coverage.length > 0 && (
                       <div style={{ display: 'flex', gap: '3px', marginLeft: '6px' }}>
-                        {sc.coverage.map(cId => (
-                          <span 
-                            key={cId}
-                            style={{ 
-                              fontSize: '0.65rem', 
-                              background: '#f1f5f9', 
-                              padding: '1px 4px', 
-                              borderRadius: '3px',
-                              border: '1px solid var(--border)',
-                              color: 'var(--text-secondary)'
-                            }}
-                          >
-                            {cId}
-                          </span>
-                        ))}
+                        {sc.coverage.map(cId => {
+                          const req = requirements.find(r => r.id === cId);
+                          return (
+                            <span 
+                              key={cId}
+                              className="custom-tooltip-container"
+                              style={{ 
+                                fontSize: '0.65rem', 
+                                background: '#f1f5f9', 
+                                padding: '1px 4px', 
+                                borderRadius: '3px',
+                                border: '1px solid var(--border)',
+                                color: 'var(--text-secondary)'
+                              }}
+                            >
+                              {cId}
+                              {req && (
+                                <span className="custom-tooltip-text">
+                                  <strong style={{ color: 'var(--primary)' }}>{req.id}:</strong> {req.description}
+                                </span>
+                              )}
+                            </span>
+                          );
+                        })}
                       </div>
                     )}
                   </div>
@@ -234,7 +243,13 @@ export const Stage4TestScenarios: React.FC = () => {
 
                 {/* Accordion Content */}
                 {isExpanded && (
-                  <div style={{ padding: '10px 16px 14px 16px', borderTop: '1px solid var(--border)', background: '#fafafa' }}>
+                  <div style={{ 
+                    padding: '10px 16px 14px 16px', 
+                    borderTop: '1px solid var(--border)', 
+                    background: '#fafafa',
+                    borderBottomLeftRadius: 'var(--radius-md)',
+                    borderBottomRightRadius: 'var(--radius-md)'
+                  }}>
                     
                     {/* Preconditions */}
                     <div style={{ marginTop: '8px' }}>
@@ -378,14 +393,14 @@ export const Stage4TestScenarios: React.FC = () => {
                 <label className="form-label">Покрытие требований</label>
                 <div 
                   style={{ 
-                    maxHeight: '100px', 
+                    maxHeight: '180px', 
                     overflowY: 'auto', 
                     border: '1px solid var(--border)', 
                     padding: '8px', 
                     borderRadius: 'var(--radius-sm)', 
-                    display: 'grid', 
-                    gridTemplateColumns: '1fr 1fr', 
-                    gap: '6px',
+                    display: 'flex', 
+                    flexDirection: 'column',
+                    gap: '8px',
                     background: '#f8fafc'
                   }}
                 >
@@ -394,20 +409,28 @@ export const Stage4TestScenarios: React.FC = () => {
                       key={req.id} 
                       style={{ 
                         display: 'flex', 
-                        alignItems: 'center', 
-                        gap: '6px', 
+                        alignItems: 'flex-start',
+                        gap: '8px', 
                         fontSize: '0.8rem', 
                         cursor: 'pointer',
-                        color: formCoverage.includes(req.id) ? 'var(--text-primary)' : 'var(--text-muted)'
+                        color: formCoverage.includes(req.id) ? 'var(--text-primary)' : 'var(--text-muted)',
+                        padding: '6px 8px',
+                        background: formCoverage.includes(req.id) ? '#ffffff' : 'transparent',
+                        border: '1px solid',
+                        borderColor: formCoverage.includes(req.id) ? 'var(--border)' : 'transparent',
+                        borderRadius: '4px',
+                        transition: 'all 0.15s ease-in-out'
                       }}
                     >
                       <input
                         type="checkbox"
                         checked={formCoverage.includes(req.id)}
                         onChange={() => handleCheckboxChange(req.id)}
-                        style={{ cursor: 'pointer' }}
+                        style={{ cursor: 'pointer', marginTop: '3px' }}
                       />
-                      <span><strong>{req.id}</strong>: {req.description.slice(0, 20)}...</span>
+                      <span style={{ lineHeight: '1.4' }}>
+                        <strong>{req.id}</strong>: {req.description}
+                      </span>
                     </label>
                   ))}
                 </div>

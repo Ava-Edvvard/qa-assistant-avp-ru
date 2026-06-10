@@ -411,3 +411,62 @@ h1, h2, h3, h4, h5, h6 {
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   gap: 12px;
 }
+
+/* Premium Custom Tooltip */
+.custom-tooltip-container {
+  position: relative;
+  display: inline-block;
+}
+.custom-tooltip-text {
+  visibility: hidden;
+  width: 280px;
+  background-color: #ffffff;
+  color: var(--text-primary);
+  text-align: left;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 8px 12px;
+  font-size: 0.75rem;
+  font-weight: normal;
+  line-height: 1.4;
+  white-space: normal;
+  word-break: break-word;
+
+  /* Position the tooltip above the badge */
+  position: absolute;
+  z-index: 999;
+  bottom: 130%;
+  left: 50%;
+  transform: translateX(-50%);
+  box-shadow: var(--shadow-lg);
+
+  /* Transition */
+  opacity: 0;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+  pointer-events: none;
+}
+.custom-tooltip-text::before {
+  content: "";
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  margin-left: -6px;
+  border-width: 6px;
+  border-style: solid;
+  border-color: var(--border) transparent transparent transparent;
+}
+.custom-tooltip-text::after {
+  content: "";
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  margin-left: -5px;
+  border-width: 5px;
+  border-style: solid;
+  border-color: #ffffff transparent transparent transparent;
+}
+.custom-tooltip-container:hover .custom-tooltip-text {
+  visibility: visible;
+  opacity: 1;
+}
+

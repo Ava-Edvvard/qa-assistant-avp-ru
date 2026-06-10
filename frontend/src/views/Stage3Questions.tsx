@@ -7,6 +7,7 @@ export const Stage3Questions: React.FC = () => {
   const { 
     questions, 
     answers, 
+    requirements,
     submitAnswer, 
     skipQuestion, 
     updateAnswer,
@@ -19,14 +20,17 @@ export const Stage3Questions: React.FC = () => {
   const [activeAnswer, setActiveAnswer] = useState('');
   const [editingQuestionId, setEditingQuestionId] = useState<string | null>(null);
   const [editText, setEditText] = useState('');
+  const [showReqTooltip, setShowReqTooltip] = useState(false);
 
   const currentQuestion = questions.length > 0 ? questions[0] : null;
+  const relatedRequirement = currentQuestion ? requirements.find(r => r.id === currentQuestion.requirement_id) : null;
 
   const handleAnswerSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (currentQuestion && activeAnswer.trim()) {
       submitAnswer(currentQuestion.id, activeAnswer.trim());
       setActiveAnswer('');
+      setShowReqTooltip(false);
     }
   };
 
@@ -34,6 +38,7 @@ export const Stage3Questions: React.FC = () => {
     if (currentQuestion) {
       skipQuestion(currentQuestion.id);
       setActiveAnswer('');
+      setShowReqTooltip(false);
     }
   };
 
@@ -41,6 +46,7 @@ export const Stage3Questions: React.FC = () => {
     if (currentQuestion) {
       submitAnswer(currentQuestion.id, 'Не рассматривается в рамках требования');
       setActiveAnswer('');
+      setShowReqTooltip(false);
     }
   };
 
@@ -61,23 +67,65 @@ export const Stage3Questions: React.FC = () => {
 
       {currentQuestion ? (
         /* Active Question Card */
-        <div className="glass-panel" style={{ padding: '20px', position: 'relative', overflow: 'hidden', marginBottom: '20px' }}>
+        <div className="glass-panel" style={{ padding: '20px', position: 'relative', marginBottom: '20px' }}>
           <div 
+            onClick={() => setShowReqTooltip(!showReqTooltip)}
+            onMouseEnter={() => setShowReqTooltip(true)}
+            onMouseLeave={() => setShowReqTooltip(false)}
             style={{
               position: 'absolute',
               top: '0',
               right: '0',
-              background: '#f1f5f9',
-              padding: '4px 8px',
-              borderRadius: '0 0 0 var(--radius-sm)',
-              fontSize: '0.7rem',
-              color: 'var(--text-secondary)',
+              background: showReqTooltip ? 'var(--primary-glow)' : '#f1f5f9',
+              padding: '6px 12px',
+              borderRadius: '0 var(--radius-sm) 0 var(--radius-sm)',
+              fontSize: '0.75rem',
+              color: 'var(--primary)',
               fontWeight: 600,
               borderLeft: '1px solid var(--border)',
-              borderBottom: '1px solid var(--border)'
+              borderBottom: '1px solid var(--border)',
+              cursor: 'pointer',
+              userSelect: 'none',
+              transition: 'all 0.15s ease-in-out',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '4px',
+              zIndex: 10
             }}
+            title="Нажмите или наведите, чтобы прочесть требование полностью"
           >
             Связано с: {currentQuestion.requirement_id}
+            
+            {showReqTooltip && relatedRequirement && (
+              <div 
+                style={{
+                  position: 'absolute',
+                  top: '100%',
+                  right: '0',
+                  width: '340px',
+                  background: '#ffffff',
+                  border: '1px solid var(--border)',
+                  boxShadow: 'var(--shadow-lg)',
+                  padding: '12px',
+                  borderRadius: 'var(--radius-sm)',
+                  zIndex: 100,
+                  marginTop: '4px',
+                  textAlign: 'left',
+                  fontSize: '0.8rem',
+                  fontWeight: 'normal',
+                  color: 'var(--text-primary)',
+                  lineHeight: 1.45,
+                  whiteSpace: 'normal',
+                  wordBreak: 'break-word',
+                }}
+                onClick={(e) => e.stopPropagation()}
+              >
+                <div style={{ fontWeight: 700, marginBottom: '6px', color: 'var(--primary)' }}>
+                  {relatedRequirement.id}
+                </div>
+                {relatedRequirement.description}
+              </div>
+            )}
           </div>
           
           <div style={{ display: 'flex', gap: '10px', alignItems: 'flex-start', marginBottom: '14px', marginTop: '8px' }}>
