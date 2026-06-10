@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
-import { Copy, Check, RotateCcw, Table, FileText, ArrowLeft, Download } from 'lucide-react';
+import React from 'react';
+import { RotateCcw, Table, ArrowLeft, Download } from 'lucide-react';
 import { useDesign } from '../context/DesignContext';
 import { DiffReportViewer } from '../components/DiffReportViewer';
+import { ScenariosViewer } from '../components/ScenariosViewer';
 
 export const StageOutput: React.FC = () => {
   const { 
@@ -12,49 +13,6 @@ export const StageOutput: React.FC = () => {
     resetSession,
     prevStage 
   } = useDesign();
-
-  const [copied, setCopied] = useState(false);
-
-  // Generate markdown representation of scenarios
-  const getScenariosMarkdown = (): string => {
-    let md = '';
-    scenarios.forEach((sc) => {
-      md += `${sc.id}: ${sc.name} - ${sc.priority}\n`;
-      
-      md += 'Предусловия:\n';
-      if (sc.preconditions.length === 0) {
-        md += '* Нет\n';
-      } else {
-        sc.preconditions.forEach((p) => {
-          md += `* ${p}\n`;
-        });
-      }
-      
-      md += 'Шаги:\n';
-      sc.steps.forEach((step, index) => {
-        md += `${index + 1}. ${step}\n`;
-      });
-      
-      md += 'Ожидаемый результат:\n';
-      sc.expected_results.forEach((res, index) => {
-        md += `${index + 1}. ${res}\n`;
-      });
-      
-      md += 'Покрытие:\n';
-      sc.coverage.forEach((reqId) => {
-        md += `* ${reqId}\n`;
-      });
-      
-      md += '\n';
-    });
-    return md.trim();
-  };
-
-  const handleCopy = () => {
-    navigator.clipboard.writeText(getScenariosMarkdown());
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  };
 
   const escapeCSV = (text: string) => {
     if (text == null) return '';
@@ -172,45 +130,9 @@ export const StageOutput: React.FC = () => {
         </div>
       </div>
 
-      {/* 2. Textual Test Scenarios (Formatted Markdown) */}
+      {/* 2. Visual Test Scenarios with Markdown Copy Capability */}
       <div className="glass-panel" style={{ padding: '16px', marginBottom: '20px' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px', borderBottom: '1px solid var(--border)', paddingBottom: '6px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <FileText size={16} style={{ color: 'var(--primary)' }} />
-            <h3 style={{ fontSize: '0.95rem', fontWeight: 700, color: 'var(--text-primary)' }}>Тест-сценарии (Markdown)</h3>
-          </div>
-          <button className="btn btn-secondary" onClick={handleCopy} style={{ padding: '4px 10px', fontSize: '0.75rem' }}>
-            {copied ? (
-              <>
-                <Check size={14} style={{ color: 'var(--success)' }} />
-                Скопировано!
-              </>
-            ) : (
-              <>
-                <Copy size={14} />
-                Копировать в буфер
-              </>
-            )}
-          </button>
-        </div>
-
-        <pre 
-          style={{ 
-            background: '#f8fafc', 
-            padding: '12px', 
-            borderRadius: 'var(--radius-sm)', 
-            border: '1px solid var(--border)',
-            color: 'var(--text-secondary)',
-            fontFamily: 'monospace, Courier New',
-            fontSize: '0.8rem',
-            overflowX: 'auto',
-            whiteSpace: 'pre-wrap',
-            maxHeight: '300px',
-            marginTop: '8px'
-          }}
-        >
-          {getScenariosMarkdown()}
-        </pre>
+        <ScenariosViewer scenarios={scenarios} requirements={requirements} />
       </div>
 
       {/* 3. Diff Summary (Only in Existing Design mode) */}
