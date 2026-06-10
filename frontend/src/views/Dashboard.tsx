@@ -3,7 +3,7 @@ import { FilePlus, FileEdit, Settings, RefreshCw, AlertCircle, Mail } from 'luci
 import { useDesign } from '../context/DesignContext';
 
 const defaultModels: Record<string, string[]> = {
-  custom: []
+  custom: ['llama-3.3-70B-instruct']
 };
 
 export const Dashboard: React.FC = () => {

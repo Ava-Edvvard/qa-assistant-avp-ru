@@ -161,7 +161,7 @@ export const DesignProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   });
   const [llmApiKey, setLlmApiKeyState] = useState<string>(() => localStorage.getItem('llm_api_key') || '');
   const [llmBaseUrl, setLlmBaseUrlState] = useState<string>(() => localStorage.getItem('llm_base_url') || 'https://llm.kaspersky-labs.com/v1/');
-  const [llmModel, setLlmModelState] = useState<string>(() => localStorage.getItem('llm_model') || '');
+  const [llmModel, setLlmModelState] = useState<string>(() => localStorage.getItem('llm_model') || 'llama-3.3-70B-instruct');
 
   const setLlmProvider = (val: string) => {
     setLlmProviderState(val);

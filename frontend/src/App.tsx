@@ -13,7 +13,7 @@ import { Stage5Comparison } from './views/Stage5Comparison';
 import { StageOutput } from './views/StageOutput';
 
 const defaultModels: Record<string, string[]> = {
-  custom: []
+  custom: ['llama-3.3-70B-instruct']
 };
 
 const MainLayout: React.FC = () => {

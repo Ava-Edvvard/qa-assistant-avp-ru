@@ -11,7 +11,7 @@ class Settings(BaseSettings):
     # Custom/Kaspersky API configuration
     CUSTOM_API_KEY: str = "mock-key-replace-with-your-real-key"
     CUSTOM_BASE_URL: str = "https://llm.kaspersky-labs.com/v1/"
-    CUSTOM_MODEL: str = ""
+    CUSTOM_MODEL: str = "llama-3.3-70B-instruct"
     
     # Server configuration
     HOST: str = "127.0.0.1"
