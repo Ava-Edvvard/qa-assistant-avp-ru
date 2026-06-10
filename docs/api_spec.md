@@ -12,7 +12,7 @@
   - `requirements_text`: string (обязательное)
   - `additional_info`: string (опциональное)
   - `files`: бинарные файлы (Excel, изображения) (опциональное)
-  - `llm_provider`: string (опциональное, например: "openai", "gemini", "custom")
+  - `llm_provider`: string (опциональное, например: "custom")
   - `llm_api_key`: string (опциональное)
   - `llm_base_url`: string (опциональное)
   - `llm_model`: string (опциональное)
@@ -50,10 +50,10 @@
       }
     ],
     "llm_config": {
-      "provider": "gemini",
-      "api_key": "AIzaSy...",
-      "base_url": null,
-      "model": "gemini-2.5-flash"
+      "provider": "custom",
+      "api_key": "kasp-api-...",
+      "base_url": "https://llm.kaspersky-labs.com/v1/",
+      "model": "llama-3.3-70B-instruct"
     }
   }
   ```
@@ -94,10 +94,10 @@
       }
     ],
     "llm_config": {
-      "provider": "gemini",
-      "api_key": "AIzaSy...",
-      "base_url": null,
-      "model": "gemini-2.5-flash"
+      "provider": "custom",
+      "api_key": "kasp-api-...",
+      "base_url": "https://llm.kaspersky-labs.com/v1/",
+      "model": "llama-3.3-70B-instruct"
     }
   }
   ```
@@ -147,10 +147,10 @@
       }
     ],
     "llm_config": {
-      "provider": "gemini",
-      "api_key": "AIzaSy...",
-      "base_url": null,
-      "model": "gemini-2.5-flash"
+      "provider": "custom",
+      "api_key": "kasp-api-...",
+      "base_url": "https://llm.kaspersky-labs.com/v1/",
+      "model": "llama-3.3-70B-instruct"
     }
   }
   ```
@@ -175,8 +175,8 @@
 - **Ответ** (`200 OK`):
   ```json
   {
-    "provider": "gemini",
-    "model": "gemini-2.5-flash",
+    "provider": "custom",
+    "model": "llama-3.3-70B-instruct",
     "is_mock": false
   }
   ```
@@ -190,17 +190,17 @@
 - **Тело запроса**:
   ```json
   {
-    "provider": "gemini",
-    "api_key": "AIzaSy...",
-    "base_url": null
+    "provider": "custom",
+    "api_key": "kasp-api-...",
+    "base_url": "https://llm.kaspersky-labs.com/v1/"
   }
   ```
 - **Ответ** (`200 OK`):
   ```json
   {
     "models": [
-      "gemini-2.5-flash",
-      "gemini-2.5-pro"
+      "llama-3.3-70B-instruct",
+      "llama-3-8b-instruct"
     ]
   }
   ```

@@ -74,11 +74,10 @@ if errorlevel 1 goto ERR_PIP
 if exist "backend\.env" goto ENV_EXISTS
 echo [INFO] Файл конфигурации .env не найден. Создание из шаблона...
 echo # QA-Assistant Backend Configuration > backend\.env
-echo LLM_PROVIDER=openai >> backend\.env
-echo OPENAI_API_KEY=mock-key-replace-with-your-real-key >> backend\.env
-echo OPENAI_MODEL=gpt-4o-mini >> backend\.env
-echo GEMINI_API_KEY=mock-key-replace-with-your-real-key >> backend\.env
-echo GEMINI_MODEL=gemini-2.5-flash >> backend\.env
+echo LLM_PROVIDER=custom >> backend\.env
+echo CUSTOM_API_KEY=mock-key-replace-with-your-real-key >> backend\.env
+echo CUSTOM_BASE_URL=https://llm.kaspersky-labs.com/v1/ >> backend\.env
+echo CUSTOM_MODEL=llama-3.3-70B-instruct >> backend\.env
 echo HOST=127.0.0.1 >> backend\.env
 echo PORT=8000 >> backend\.env
 :ENV_EXISTS

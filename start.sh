@@ -101,11 +101,10 @@ if [ ! -f "backend/.env" ]; then
     echo "[INFO] Файл конфигурации .env не найден. Создание из шаблона..."
     cat <<EOT > backend/.env
 # QA-Assistant Backend Configuration
-LLM_PROVIDER=openai
-OPENAI_API_KEY=mock-key-replace-with-your-real-key
-OPENAI_MODEL=gpt-4o-mini
-GEMINI_API_KEY=mock-key-replace-with-your-real-key
-GEMINI_MODEL=gemini-2.5-flash
+LLM_PROVIDER=custom
+CUSTOM_API_KEY=mock-key-replace-with-your-real-key
+CUSTOM_BASE_URL=https://llm.kaspersky-labs.com/v1/
+CUSTOM_MODEL=llama-3.3-70B-instruct
 HOST=127.0.0.1
 PORT=8000
 EOT
