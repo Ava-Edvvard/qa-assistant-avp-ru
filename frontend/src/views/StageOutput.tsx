@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { Copy, Check, RotateCcw, Table, FileText, ArrowLeft, GitCompare, Download } from 'lucide-react';
+import { Copy, Check, RotateCcw, Table, FileText, ArrowLeft, Download } from 'lucide-react';
 import { useDesign } from '../context/DesignContext';
+import { DiffReportViewer } from '../components/DiffReportViewer';
 
 export const StageOutput: React.FC = () => {
   const { 
@@ -215,20 +216,7 @@ export const StageOutput: React.FC = () => {
       {/* 3. Diff Summary (Only in Existing Design mode) */}
       {mode === 'existing' && comparisonReport && (
         <div className="glass-panel" style={{ padding: '16px', marginBottom: '20px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '10px', borderBottom: '1px solid var(--border)', paddingBottom: '6px' }}>
-            <GitCompare size={16} style={{ color: 'var(--primary)' }} />
-            <h3 style={{ fontSize: '0.95rem', fontWeight: 700, color: 'var(--text-primary)' }}>Сводка изменений</h3>
-          </div>
-          <div 
-            style={{ 
-              lineHeight: 1.5, 
-              color: 'var(--text-secondary)', 
-              whiteSpace: 'pre-wrap',
-              fontSize: '0.85rem'
-            }}
-          >
-            {comparisonReport}
-          </div>
+          <DiffReportViewer reportText={comparisonReport} />
         </div>
       )}
 
