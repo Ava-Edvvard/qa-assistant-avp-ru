@@ -46,6 +46,8 @@ interface DesignContextType {
   loading: boolean;
   error: string | null;
   activeLlmName: string;
+  isFallbackMock: boolean;
+  fallbackError: string | null;
   
   // LLM Config
   llmProvider: string;
@@ -91,6 +93,8 @@ interface DesignContextType {
   
   // Stage 5 Actions (Existing Design)
   compareTestScenarios: () => Promise<void>;
+  
+  clearFallbackMock: () => void;
 }
 
 const DesignContext = createContext<DesignContextType | undefined>(undefined);
@@ -112,6 +116,8 @@ export const DesignProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
+  const [isFallbackMock, setIsFallbackMock] = useState<boolean>(false);
+  const [fallbackError, setFallbackError] = useState<string | null>(null);
 
   interface ServerLlmInfo {
     provider: string;
@@ -131,6 +137,9 @@ export const DesignProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   }, []);
 
   const getActiveLlmName = () => {
+    if (isFallbackMock) {
+      return 'Mock (Аварийный режим)';
+    }
     if (llmApiKey && llmApiKey.trim()) {
       const providerName = llmProvider === 'openai' ? 'OpenAI' : (llmProvider === 'gemini' ? 'Gemini' : 'Custom');
       const modelName = llmModel || 'default';
@@ -229,6 +238,8 @@ export const DesignProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     setRawRequirementsText('');
     setError(null);
     setLoading(false);
+    setIsFallbackMock(false);
+    setFallbackError(null);
   };
 
   // Stage 1: Parse requirements and file uploads
@@ -266,6 +277,13 @@ export const DesignProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         headers: { 'Content-Type': 'multipart/form-data' },
       });
       setRequirementsState(response.data.requirements);
+      if (response.data.is_mock && response.data.error_message) {
+        setIsFallbackMock(true);
+        setFallbackError(response.data.error_message);
+      } else {
+        setIsFallbackMock(false);
+        setFallbackError(null);
+      }
       nextStage();
     } catch (err: any) {
       setError(err.response?.data?.detail || 'Ошибка парсинга требований');
@@ -317,6 +335,13 @@ export const DesignProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       setQuestions(response.data.questions);
       setAllQuestions(response.data.questions);
       setAnswers([]);
+      if (response.data.is_mock && response.data.error_message) {
+        setIsFallbackMock(true);
+        setFallbackError(response.data.error_message);
+      } else {
+        setIsFallbackMock(false);
+        setFallbackError(null);
+      }
       nextStage();
     } catch (err: any) {
       setError(err.response?.data?.detail || 'Ошибка генерации вопросов');
@@ -391,6 +416,13 @@ export const DesignProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       
       setRequirementsState(updatedReqs);
       setScenariosState(generatedScenarios);
+      if (response.data.is_mock && response.data.error_message) {
+        setIsFallbackMock(true);
+        setFallbackError(response.data.error_message);
+      } else {
+        setIsFallbackMock(false);
+        setFallbackError(null);
+      }
       nextStage();
     } catch (err: any) {
       setError(err.response?.data?.detail || 'Ошибка генерации тест-сценариев');
@@ -441,12 +473,24 @@ export const DesignProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         } : null
       });
       setComparisonReport(response.data.changes_summary);
+      if (response.data.is_mock && response.data.error_message) {
+        setIsFallbackMock(true);
+        setFallbackError(response.data.error_message);
+      } else {
+        setIsFallbackMock(false);
+        setFallbackError(null);
+      }
       nextStage();
     } catch (err: any) {
       setError(err.response?.data?.detail || 'Ошибка сравнения тест-сценариев');
     } finally {
       setLoading(false);
     }
+  };
+
+  const clearFallbackMock = () => {
+    setIsFallbackMock(false);
+    setFallbackError(null);
   };
 
   return (
@@ -465,6 +509,8 @@ export const DesignProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         loading,
         error,
         activeLlmName: getActiveLlmName(),
+        isFallbackMock,
+        fallbackError,
 
         llmProvider,
         llmApiKey,
@@ -502,6 +548,7 @@ export const DesignProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         deleteScenario,
         
         compareTestScenarios,
+        clearFallbackMock,
       }}
     >
       {children}

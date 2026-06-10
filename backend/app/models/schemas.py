@@ -46,6 +46,8 @@ class AnalysisRequest(BaseModel):
 
 class RequirementsResponse(BaseModel):
     requirements: List[Requirement]
+    is_mock: Optional[bool] = False
+    error_message: Optional[str] = None
 
 class QuestionsGenerationRequest(BaseModel):
     requirements: List[Requirement]
@@ -53,6 +55,8 @@ class QuestionsGenerationRequest(BaseModel):
 
 class QuestionsResponse(BaseModel):
     questions: List[ClarifyingQuestion]
+    is_mock: Optional[bool] = False
+    error_message: Optional[str] = None
 
 class ScenariosGenerationRequest(BaseModel):
     requirements: List[Requirement]
@@ -61,6 +65,8 @@ class ScenariosGenerationRequest(BaseModel):
 
 class ScenariosResponse(BaseModel):
     scenarios: List[TestScenario]
+    is_mock: Optional[bool] = False
+    error_message: Optional[str] = None
 
 class CompareRequest(BaseModel):
     old_scenarios_text: str
@@ -72,3 +78,5 @@ class CompareResponse(BaseModel):
     added: List[str] = Field(default_factory=list, description="List of added scenario IDs")
     removed: List[str] = Field(default_factory=list, description="List of removed scenario IDs")
     modified: List[str] = Field(default_factory=list, description="List of modified scenario IDs")
+    is_mock: Optional[bool] = False
+    error_message: Optional[str] = None

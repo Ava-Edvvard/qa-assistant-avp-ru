@@ -150,8 +150,8 @@ class LLMService:
             data = json.loads(content)
             return [Requirement(id=item["id"], description=item["description"], cases_count=0) for item in data]
         except Exception as e:
-            logger.error(f"Error calling OpenAI parse_requirements: {e}. Falling back to mock.")
-            return self._mock_parse_requirements(text, additional_info)
+            logger.error(f"Error calling OpenAI parse_requirements: {e}.")
+            raise e
 
     def generate_questions(self, requirements: List[Requirement], llm_config: Optional[LLMConfig] = None) -> List[ClarifyingQuestion]:
         """
@@ -190,8 +190,8 @@ class LLMService:
             data = json.loads(content)
             return [ClarifyingQuestion(id=item["id"], requirement_id=item["requirement_id"], question=item["question"]) for item in data]
         except Exception as e:
-            logger.error(f"Error calling OpenAI generate_questions: {e}. Falling back to mock.")
-            return self._mock_generate_questions(requirements)
+            logger.error(f"Error calling OpenAI generate_questions: {e}.")
+            raise e
 
     def generate_scenarios(self, requirements: List[Requirement], answers: List[UserAnswer], llm_config: Optional[LLMConfig] = None) -> List[TestScenario]:
         """
@@ -252,8 +252,8 @@ class LLMService:
                 ) for item in data
             ]
         except Exception as e:
-            logger.error(f"Error calling OpenAI generate_scenarios: {e}. Falling back to mock.")
-            return self._mock_generate_scenarios(requirements, answers)
+            logger.error(f"Error calling OpenAI generate_scenarios: {e}.")
+            raise e
 
     def compare_scenarios(self, old_text: str, new_cases: List[TestScenario], llm_config: Optional[LLMConfig] = None) -> str:
         """
@@ -295,8 +295,8 @@ class LLMService:
             )
             return response.choices[0].message.content.strip()
         except Exception as e:
-            logger.error(f"Error calling OpenAI compare_scenarios: {e}. Falling back to mock.")
-            return self._mock_compare_scenarios(old_text, new_cases)
+            logger.error(f"Error calling OpenAI compare_scenarios: {e}.")
+            raise e
 
     # --- MOCK FALLBACKS ---
 

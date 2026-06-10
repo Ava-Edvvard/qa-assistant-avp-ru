@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Copy, Check, RotateCcw, Table, FileText, ArrowLeft, GitCompare } from 'lucide-react';
+import { Copy, Check, RotateCcw, Table, FileText, ArrowLeft, GitCompare, Download } from 'lucide-react';
 import { useDesign } from '../context/DesignContext';
 
 export const StageOutput: React.FC = () => {
@@ -55,6 +55,45 @@ export const StageOutput: React.FC = () => {
     setTimeout(() => setCopied(false), 2000);
   };
 
+  const escapeCSV = (text: string) => {
+    if (text == null) return '';
+    const stringified = String(text);
+    if (stringified.includes(';') || stringified.includes('"') || stringified.includes('\n') || stringified.includes('\r')) {
+      return `"${stringified.replace(/"/g, '""')}"`;
+    }
+    return stringified;
+  };
+
+  const handleExportCSV = () => {
+    const headers = ['№', 'Требование', ...scenarios.map(sc => sc.id), 'Всего покрывающих кейсов'];
+    const csvRows = [headers.map(escapeCSV).join(';')];
+
+    requirements.forEach(req => {
+      let coverCount = 0;
+      const row = [
+        req.id,
+        req.description,
+        ...scenarios.map(sc => {
+          const isCovered = sc.coverage.includes(req.id);
+          if (isCovered) coverCount++;
+          return isCovered ? '+' : '-';
+        }),
+        coverCount.toString()
+      ];
+      csvRows.push(row.map(escapeCSV).join(';'));
+    });
+
+    const csvContent = '\uFEFF' + csvRows.join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', `traceability_matrix_${new Date().toISOString().slice(0, 10)}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   return (
     <div className="container animated-in">
       <div style={{ marginBottom: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -74,9 +113,15 @@ export const StageOutput: React.FC = () => {
 
       {/* 1. Traceability Matrix Grid */}
       <div className="glass-panel" style={{ padding: '16px', marginBottom: '20px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '10px' }}>
-          <Table size={16} style={{ color: 'var(--primary)' }} />
-          <h3 style={{ fontSize: '0.95rem', fontWeight: 700, color: 'var(--text-primary)' }}>Матрица трассируемости</h3>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px', borderBottom: '1px solid var(--border)', paddingBottom: '6px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <Table size={16} style={{ color: 'var(--primary)' }} />
+            <h3 style={{ fontSize: '0.95rem', fontWeight: 700, color: 'var(--text-primary)' }}>Матрица трассируемости</h3>
+          </div>
+          <button className="btn btn-secondary" onClick={handleExportCSV} style={{ padding: '4px 10px', fontSize: '0.75rem', display: 'flex', alignItems: 'center', gap: '4px' }}>
+            <Download size={14} />
+            Экспорт в .CSV
+          </button>
         </div>
 
         <div style={{ overflowX: 'auto' }}>

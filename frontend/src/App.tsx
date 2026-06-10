@@ -1,4 +1,6 @@
-import React from 'react';
+import React, { useState } from 'react';
+import { createPortal } from 'react-dom';
+import { Settings, AlertCircle, RefreshCw } from 'lucide-react';
 import { DesignProvider, useDesign } from './context/DesignContext';
 import { Header } from './components/Header';
 import { Dashboard } from './views/Dashboard';
@@ -10,8 +12,81 @@ import { Stage4TestScenarios } from './views/Stage4TestScenarios';
 import { Stage5Comparison } from './views/Stage5Comparison';
 import { StageOutput } from './views/StageOutput';
 
+const defaultModels: Record<string, string[]> = {
+  openai: ['gpt-4o-mini', 'gpt-4o', 'gpt-4-turbo', 'gpt-3.5-turbo'],
+  gemini: ['gemini-2.5-flash', 'gemini-2.5-pro'],
+  custom: []
+};
+
 const MainLayout: React.FC = () => {
-  const { mode, currentStage, activeLlmName } = useDesign();
+  const { 
+    mode, 
+    currentStage, 
+    activeLlmName, 
+    isFallbackMock, 
+    fallbackError,
+    llmProvider,
+    llmApiKey,
+    llmBaseUrl,
+    llmModel,
+    setLlmProvider,
+    setLlmApiKey,
+    setLlmBaseUrl,
+    setLlmModel,
+    fetchModels,
+    clearFallbackMock
+  } = useDesign();
+
+  const [showSettingsModal, setShowSettingsModal] = useState(false);
+  const [localProvider, setLocalProvider] = useState(llmProvider);
+  const [localApiKey, setLocalApiKey] = useState(llmApiKey);
+  const [localBaseUrl, setLocalBaseUrl] = useState(llmBaseUrl);
+  const [localModel, setLocalModel] = useState(llmModel);
+
+  const [localModelsList, setLocalModelsList] = useState<string[]>([]);
+  const [localModelsLoading, setLocalModelsLoading] = useState(false);
+  const [localModelsError, setLocalModelsError] = useState<string | null>(null);
+
+  const handleOpenSettings = () => {
+    setLocalProvider(llmProvider);
+    setLocalApiKey(llmApiKey);
+    setLocalBaseUrl(llmBaseUrl);
+    setLocalModel(llmModel);
+    setLocalModelsList([]);
+    setLocalModelsError(null);
+    setShowSettingsModal(true);
+  };
+
+  const handleLoadLocalModels = async () => {
+    setLocalModelsLoading(true);
+    setLocalModelsError(null);
+    try {
+      const list = await fetchModels(localProvider, localApiKey, localBaseUrl);
+      setLocalModelsList(list);
+      if (list.length > 0) {
+        if (!list.includes(localModel)) {
+          setLocalModel(list[0]);
+        }
+      } else {
+        setLocalModelsError('Список моделей недоступен — введите название модели вручную.');
+      }
+    } catch (err: any) {
+      setLocalModelsError(err.message || 'Не удалось загрузить список моделей.');
+    } finally {
+      setLocalModelsLoading(false);
+    }
+  };
+
+  const handleSaveSettings = () => {
+    setLlmProvider(localProvider);
+    setLlmApiKey(localApiKey);
+    setLlmBaseUrl(localBaseUrl);
+    setLlmModel(localModel);
+    clearFallbackMock();
+    setShowSettingsModal(false);
+  };
+
+  const mergedLocalModels = localModelsList.length > 0 ? localModelsList : (defaultModels[localProvider] || []);
 
   // Define steps titles based on mode
   const newDesignStages = [
@@ -90,18 +165,230 @@ const MainLayout: React.FC = () => {
                     width: '6px', 
                     height: '6px', 
                     borderRadius: '50%', 
-                    backgroundColor: activeLlmName.includes('Mock') ? 'var(--warning)' : 'var(--success)',
+                    backgroundColor: isFallbackMock 
+                      ? 'var(--danger)' 
+                      : (activeLlmName.includes('Mock') ? 'var(--warning)' : 'var(--success)'),
                     display: 'inline-block' 
                   }}
                 ></span>
                 Модель: <strong>{activeLlmName}</strong>
+                <button
+                  onClick={handleOpenSettings}
+                  onMouseEnter={(e) => (e.currentTarget.style.color = 'var(--primary)')}
+                  onMouseLeave={(e) => (e.currentTarget.style.color = 'var(--text-muted)')}
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    padding: 0,
+                    margin: '0 0 0 6px',
+                    color: 'var(--text-muted)',
+                    cursor: 'pointer',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    transition: 'color 0.15s ease'
+                  }}
+                  title="Изменить настройки ИИ"
+                >
+                  <Settings size={12} />
+                </button>
               </span>
             </div>
+
+            {/* Global fallback mock error notice */}
+            {isFallbackMock && fallbackError && (
+              <div 
+                style={{
+                  padding: '10px 14px',
+                  background: '#fef2f2',
+                  border: '1px solid #fee2e2',
+                  borderRadius: 'var(--radius-sm)',
+                  color: 'var(--danger)',
+                  marginBottom: '20px',
+                  fontSize: '0.85rem',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  boxShadow: 'var(--shadow-sm)',
+                  animation: 'fadeIn 0.2s ease-out'
+                }}
+              >
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  background: 'var(--danger)',
+                  color: '#ffffff',
+                  borderRadius: '50%',
+                  width: '20px',
+                  height: '20px',
+                  fontWeight: 'bold',
+                  fontSize: '0.8rem',
+                  flexShrink: 0
+                }}>
+                  !
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                  <span>
+                    <strong>Аварийное переключение:</strong> Запрос к ИИ завершился ошибкой ({fallbackError}). 
+                    Система переключилась на локальные мок-данные.
+                  </span>
+                  <button
+                    onClick={handleOpenSettings}
+                    style={{
+                      background: 'none',
+                      border: 'none',
+                      padding: 0,
+                      color: 'var(--primary)',
+                      textDecoration: 'underline',
+                      cursor: 'pointer',
+                      fontSize: '0.85rem',
+                      fontWeight: 650
+                    }}
+                  >
+                    Настроить ИИ
+                  </button>
+                </div>
+              </div>
+            )}
 
             {renderStageView()}
           </div>
         )}
       </main>
+
+      {/* Dynamic LLM Settings Modal */}
+      {showSettingsModal && createPortal(
+        <div className="modal-overlay">
+          <div className="modal-content" style={{ maxWidth: '500px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '14px' }}>
+              <Settings size={18} style={{ color: 'var(--primary)' }} />
+              <h3 style={{ fontSize: '1.1rem', fontWeight: 700, margin: 0 }}>Настройки нейросети (LLM)</h3>
+            </div>
+            
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              
+              <div className="form-group" style={{ marginBottom: 0 }}>
+                <label className="form-label">Провайдер ИИ</label>
+                <select 
+                  className="form-select"
+                  value={localProvider}
+                  onChange={(e) => {
+                    setLocalProvider(e.target.value);
+                    setLocalModel('');
+                    setLocalModelsList([]);
+                  }}
+                  style={{ fontSize: '0.85rem' }}
+                >
+                  <option value="openai">OpenAI (официальный)</option>
+                  <option value="gemini">Google Gemini (OpenAI layer)</option>
+                  <option value="custom">Кастомный (OpenAI-совместимый)</option>
+                </select>
+              </div>
+
+              <div className="form-group" style={{ marginBottom: 0 }}>
+                <label className="form-label">API-ключ</label>
+                <input 
+                  type="password"
+                  className="form-input"
+                  placeholder={llmApiKey ? "•••••••••••••••• (Сохранен)" : "Введите API-ключ"}
+                  value={localApiKey}
+                  onChange={(e) => setLocalApiKey(e.target.value)}
+                  style={{ fontSize: '0.85rem' }}
+                />
+              </div>
+
+              {localProvider === 'custom' && (
+                <div className="form-group" style={{ marginBottom: 0 }}>
+                  <label className="form-label">Base URL (Адрес API)</label>
+                  <input 
+                    type="text"
+                    className="form-input"
+                    placeholder="Пример: https://api.proxy.com/v1"
+                    value={localBaseUrl}
+                    onChange={(e) => setLocalBaseUrl(e.target.value)}
+                    style={{ fontSize: '0.85rem' }}
+                  />
+                </div>
+              )}
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', paddingTop: '4px', borderTop: '1px solid var(--border)' }}>
+                <div style={{ display: 'flex', alignItems: 'flex-end', gap: '12px' }}>
+                  <div className="form-group" style={{ flex: 1, marginBottom: 0 }}>
+                    <label className="form-label">Выбор модели</label>
+                    {localProvider === 'custom' && localModelsList.length === 0 ? (
+                      <input 
+                        type="text"
+                        className="form-input"
+                        placeholder="Название модели, например: llama-3"
+                        value={localModel}
+                        onChange={(e) => setLocalModel(e.target.value)}
+                        style={{ fontSize: '0.85rem' }}
+                      />
+                    ) : (
+                      <select
+                        className="form-select"
+                        value={localModel}
+                        onChange={(e) => setLocalModel(e.target.value)}
+                        style={{ fontSize: '0.85rem' }}
+                      >
+                        {mergedLocalModels.map((m) => (
+                          <option key={m} value={m}>{m}</option>
+                        ))}
+                      </select>
+                    )}
+                  </div>
+
+                  <button 
+                    className="btn btn-secondary"
+                    onClick={handleLoadLocalModels}
+                    disabled={localModelsLoading || !localApiKey.trim()}
+                    style={{ height: '38px', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.8rem', padding: '6px 12px' }}
+                  >
+                    <RefreshCw size={14} className={localModelsLoading ? "spin" : ""} />
+                    {localModelsLoading ? 'Загрузка...' : 'Загрузить модели'}
+                  </button>
+                </div>
+
+                {localModelsError && (
+                  <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    color: localModelsError.includes('недоступен') ? '#856404' : 'var(--danger)',
+                    fontSize: '0.75rem',
+                    marginTop: '4px'
+                  }}>
+                    <AlertCircle size={14} />
+                    <span>{localModelsError}</span>
+                  </div>
+                )}
+              </div>
+
+            </div>
+
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', marginTop: '16px', borderTop: '1px solid var(--border)', paddingTop: '12px' }}>
+              <button 
+                type="button" 
+                className="btn btn-secondary" 
+                onClick={() => setShowSettingsModal(false)}
+                style={{ padding: '6px 12px', fontSize: '0.8rem' }}
+              >
+                Отмена
+              </button>
+              <button 
+                type="button" 
+                className="btn btn-primary" 
+                onClick={handleSaveSettings}
+                style={{ padding: '6px 12px', fontSize: '0.8rem' }}
+              >
+                Применить
+              </button>
+            </div>
+          </div>
+        </div>,
+        document.body
+      )}
     </div>
   );
 };
