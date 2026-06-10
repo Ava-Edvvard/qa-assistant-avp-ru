@@ -141,23 +141,26 @@ export const DesignProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       return 'Mock (Аварийный режим)';
     }
     if (llmApiKey && llmApiKey.trim()) {
-      const providerName = llmProvider === 'openai' ? 'OpenAI' : (llmProvider === 'gemini' ? 'Gemini' : 'Custom');
+      const providerName = llmProvider === 'openai' ? 'OpenAI' : (llmProvider === 'gemini' ? 'Gemini' : 'Kaspersky');
       const modelName = llmModel || 'default';
       return `${providerName} (${modelName})`;
     } else if (serverLlmInfo) {
       if (serverLlmInfo.is_mock) {
         return 'Mock (Локальная заглушка)';
       }
-      const providerName = serverLlmInfo.provider === 'openai' ? 'OpenAI' : (serverLlmInfo.provider === 'gemini' ? 'Gemini' : 'Custom');
+      const providerName = serverLlmInfo.provider === 'openai' ? 'OpenAI' : (serverLlmInfo.provider === 'gemini' ? 'Gemini' : 'Kaspersky');
       return `${providerName} (${serverLlmInfo.model})`;
     }
     return 'Загрузка...';
   };
 
   // LLM Config state
-  const [llmProvider, setLlmProviderState] = useState<string>(() => localStorage.getItem('llm_provider') || 'openai');
+  const [llmProvider, setLlmProviderState] = useState<string>(() => {
+    const saved = localStorage.getItem('llm_provider');
+    return (saved && saved !== 'openai' && saved !== 'gemini') ? saved : 'custom';
+  });
   const [llmApiKey, setLlmApiKeyState] = useState<string>(() => localStorage.getItem('llm_api_key') || '');
-  const [llmBaseUrl, setLlmBaseUrlState] = useState<string>(() => localStorage.getItem('llm_base_url') || '');
+  const [llmBaseUrl, setLlmBaseUrlState] = useState<string>(() => localStorage.getItem('llm_base_url') || 'https://llm.kaspersky-labs.com/v1/');
   const [llmModel, setLlmModelState] = useState<string>(() => localStorage.getItem('llm_model') || '');
 
   const setLlmProvider = (val: string) => {

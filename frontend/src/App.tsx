@@ -13,8 +13,6 @@ import { Stage5Comparison } from './views/Stage5Comparison';
 import { StageOutput } from './views/StageOutput';
 
 const defaultModels: Record<string, string[]> = {
-  openai: ['gpt-4o-mini', 'gpt-4o', 'gpt-4-turbo', 'gpt-3.5-turbo'],
-  gemini: ['gemini-2.5-flash', 'gemini-2.5-pro'],
   custom: []
 };
 
@@ -280,37 +278,44 @@ const MainLayout: React.FC = () => {
                   }}
                   style={{ fontSize: '0.85rem' }}
                 >
-                  <option value="openai">OpenAI (официальный)</option>
-                  <option value="gemini">Google Gemini (OpenAI layer)</option>
-                  <option value="custom">Кастомный (OpenAI-совместимый)</option>
+                  <option value="custom">Kaspersky</option>
                 </select>
               </div>
 
               <div className="form-group" style={{ marginBottom: 0 }}>
                 <label className="form-label">API-ключ</label>
+                <div style={{ display: 'flex', gap: '8px' }}>
+                  <input 
+                    type="password"
+                    className="form-input"
+                    placeholder={llmApiKey ? "•••••••••••••••• (Сохранен)" : "Введите API-ключ"}
+                    value={localApiKey}
+                    onChange={(e) => setLocalApiKey(e.target.value)}
+                    style={{ fontSize: '0.85rem', flex: 1 }}
+                  />
+                  <a 
+                    href="https://confluence.kaspersky.com/spaces/LS/pages/1577822276/%F0%9F%A4%96%D0%A0%D0%B0%D0%B1%D0%BE%D1%82%D0%B0+%D1%87%D0%B5%D1%80%D0%B5%D0%B7+API"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="btn btn-secondary"
+                    style={{ fontSize: '0.75rem', padding: '6px 12px', whiteSpace: 'nowrap', display: 'inline-flex', alignItems: 'center', height: '38px' }}
+                  >
+                    Перейти к API
+                  </a>
+                </div>
+              </div>
+
+              <div className="form-group" style={{ marginBottom: 0 }}>
+                <label className="form-label">Base URL (Адрес API Kaspersky)</label>
                 <input 
-                  type="password"
+                  type="text"
                   className="form-input"
-                  placeholder={llmApiKey ? "•••••••••••••••• (Сохранен)" : "Введите API-ключ"}
-                  value={localApiKey}
-                  onChange={(e) => setLocalApiKey(e.target.value)}
+                  placeholder="Пример: https://llm.kaspersky-labs.com/v1/"
+                  value={localBaseUrl}
+                  onChange={(e) => setLocalBaseUrl(e.target.value)}
                   style={{ fontSize: '0.85rem' }}
                 />
               </div>
-
-              {localProvider === 'custom' && (
-                <div className="form-group" style={{ marginBottom: 0 }}>
-                  <label className="form-label">Base URL (Адрес API)</label>
-                  <input 
-                    type="text"
-                    className="form-input"
-                    placeholder="Пример: https://api.proxy.com/v1"
-                    value={localBaseUrl}
-                    onChange={(e) => setLocalBaseUrl(e.target.value)}
-                    style={{ fontSize: '0.85rem' }}
-                  />
-                </div>
-              )}
 
               <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', paddingTop: '4px', borderTop: '1px solid var(--border)' }}>
                 <div style={{ display: 'flex', alignItems: 'flex-end', gap: '12px' }}>

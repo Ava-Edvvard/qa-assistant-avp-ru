@@ -3,8 +3,6 @@ import { FilePlus, FileEdit, Settings, RefreshCw, AlertCircle, Mail } from 'luci
 import { useDesign } from '../context/DesignContext';
 
 const defaultModels: Record<string, string[]> = {
-  openai: ['gpt-4o-mini', 'gpt-4o', 'gpt-4-turbo', 'gpt-3.5-turbo'],
-  gemini: ['gemini-2.5-flash', 'gemini-2.5-pro'],
   custom: []
 };
 
@@ -126,41 +124,48 @@ export const Dashboard: React.FC = () => {
                 value={llmProvider}
                 onChange={(e) => {
                   setLlmProvider(e.target.value);
-                  setModels([]); // Reset models list when provider changes
+                  setModels([]); 
                   setLlmModel('');
                 }}
               >
-                <option value="openai">OpenAI (официальный)</option>
-                <option value="gemini">Google Gemini (OpenAI layer)</option>
-                <option value="custom">Кастомный (OpenAI-совместимый)</option>
+                <option value="custom">Kaspersky</option>
               </select>
             </div>
 
             <div className="form-group" style={{ marginBottom: 0 }}>
               <label className="form-label">API-ключ</label>
-              <input 
-                type="password"
-                className="form-input"
-                placeholder={llmApiKey ? "••••••••••••••••" : "Введите API-ключ (необязательно)"}
-                value={llmApiKey}
-                onChange={(e) => setLlmApiKey(e.target.value)}
-              />
+              <div style={{ display: 'flex', gap: '8px' }}>
+                <input 
+                  type="password"
+                  className="form-input"
+                  placeholder={llmApiKey ? "••••••••••••••••" : "Введите API-ключ (необязательно)"}
+                  value={llmApiKey}
+                  onChange={(e) => setLlmApiKey(e.target.value)}
+                  style={{ flex: 1 }}
+                />
+                <a 
+                  href="https://confluence.kaspersky.com/spaces/LS/pages/1577822276/%F0%9F%A4%96%D0%A0%D0%B0%D0%B1%D0%BE%D1%82%D0%B0+%D1%87%D0%B5%D1%80%D0%B5%D0%B7+API"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="btn btn-secondary"
+                  style={{ fontSize: '0.8rem', padding: '6px 12px', whiteSpace: 'nowrap', display: 'inline-flex', alignItems: 'center', height: '38px' }}
+                >
+                  Перейти к API
+                </a>
+              </div>
             </div>
           </div>
 
-          {/* Conditional Fields for Custom Provider */}
-          {llmProvider === 'custom' && (
-            <div className="form-group" style={{ marginBottom: 0 }}>
-              <label className="form-label">Base URL (Адрес API кастомного сервиса)</label>
-              <input 
-                type="text"
-                className="form-input"
-                placeholder="Пример: https://api.proxy.com/v1"
-                value={llmBaseUrl}
-                onChange={(e) => setLlmBaseUrl(e.target.value)}
-              />
-            </div>
-          )}
+          <div className="form-group" style={{ marginBottom: 0 }}>
+            <label className="form-label">Base URL (Адрес API Kaspersky)</label>
+            <input 
+              type="text"
+              className="form-input"
+              placeholder="Пример: https://llm.kaspersky-labs.com/v1/"
+              value={llmBaseUrl}
+              onChange={(e) => setLlmBaseUrl(e.target.value)}
+            />
+          </div>
 
           {/* Model selection & dynamic loading */}
           {llmApiKey.trim().length > 0 && (

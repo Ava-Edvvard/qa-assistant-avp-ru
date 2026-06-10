@@ -5,16 +5,13 @@ class Settings(BaseSettings):
     PROJECT_NAME: str = "QA-Assistant API"
     API_V1_STR: str = "/api"
     
-    # LLM Provider: "openai" or "gemini"
-    LLM_PROVIDER: str = "openai"
+    # LLM Provider: "custom"
+    LLM_PROVIDER: str = "custom"
 
-    # OpenAI API configuration
-    OPENAI_API_KEY: str = "mock-key-replace-with-your-real-key"
-    OPENAI_MODEL: str = "gpt-4o-mini"
-
-    # Gemini API configuration
-    GEMINI_API_KEY: str = "mock-key-replace-with-your-real-key"
-    GEMINI_MODEL: str = "gemini-2.5-flash"
+    # Custom/Kaspersky API configuration
+    CUSTOM_API_KEY: str = "mock-key-replace-with-your-real-key"
+    CUSTOM_BASE_URL: str = "https://llm.kaspersky-labs.com/v1/"
+    CUSTOM_MODEL: str = ""
     
     # Server configuration
     HOST: str = "127.0.0.1"

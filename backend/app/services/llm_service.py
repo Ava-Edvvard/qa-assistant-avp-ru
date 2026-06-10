@@ -44,29 +44,23 @@ class LLMService:
         self.client = None
         self.model = ""
         
-        if self.provider == "gemini":
-            gemini_key = settings.GEMINI_API_KEY
-            if gemini_key and gemini_key != "mock-key-replace-with-your-real-key" and gemini_key.strip():
+        if self.provider == "custom":
+            custom_key = settings.CUSTOM_API_KEY
+            custom_url = settings.CUSTOM_BASE_URL
+            custom_model = settings.CUSTOM_MODEL
+            if custom_key and custom_key != "mock-key-replace-with-your-real-key" and custom_key.strip():
                 self.client = OpenAI(
-                    api_key=gemini_key,
-                    base_url="https://generativelanguage.googleapis.com/v1beta/openai/"
+                    api_key=custom_key,
+                    base_url=custom_url
                 )
-                self.model = settings.GEMINI_MODEL
+                self.model = custom_model
                 self.is_mock = False
-                logger.info(f"Initialized Gemini LLM using OpenAI compatibility layer with model: {self.model}")
-        
-        else: # Default or explicitly 'openai'
-            openai_key = settings.OPENAI_API_KEY
-            if openai_key and openai_key != "mock-key-replace-with-your-real-key" and openai_key.strip():
-                self.client = OpenAI(api_key=openai_key)
-                self.model = settings.OPENAI_MODEL
-                self.is_mock = False
-                logger.info(f"Initialized OpenAI LLM with model: {self.model}")
+                logger.info(f"Initialized Kaspersky LLM at {custom_url} with model: {self.model}")
                 
         if self.is_mock:
             logger.warning(
                 f"Using Mock LLM responses (Provider: {self.provider}). "
-                "Configure valid GEMINI_API_KEY or OPENAI_API_KEY in .env to enable real LLM integration."
+                "Configure valid CUSTOM_API_KEY in .env to enable real Kaspersky LLM integration."
             )
 
     def _get_client_and_model(self, llm_config: Optional[LLMConfig] = None):
@@ -82,21 +76,10 @@ class LLMService:
                 return None, "", True
 
             try:
-                if provider == "gemini":
+                if provider == "custom":
                     client = OpenAI(
                         api_key=api_key,
-                        base_url="https://generativelanguage.googleapis.com/v1beta/openai/"
-                    )
-                    model = llm_config.model or "gemini-2.5-flash"
-                    return client, model, False
-                elif provider == "openai":
-                    client = OpenAI(api_key=api_key)
-                    model = llm_config.model or "gpt-4o-mini"
-                    return client, model, False
-                elif provider == "custom":
-                    client = OpenAI(
-                        api_key=api_key,
-                        base_url=llm_config.base_url or "http://127.0.0.1:8000/v1"
+                        base_url=llm_config.base_url or "https://llm.kaspersky-labs.com/v1/"
                     )
                     model = llm_config.model or ""
                     return client, model, False
