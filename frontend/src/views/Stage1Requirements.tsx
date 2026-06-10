@@ -77,7 +77,7 @@ export const Stage1Requirements: React.FC = () => {
           <textarea
             id="info-input"
             className="form-textarea"
-            placeholder="Контекст проекта, описание окружения, ссылки на документацию..."
+            placeholder="Пример: Требования актуальны только для пользователя admin"
             value={addInfo}
             onChange={(e) => setAddInfo(e.target.value)}
             style={{ minHeight: '60px', fontSize: '0.85rem' }}
