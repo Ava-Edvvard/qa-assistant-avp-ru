@@ -1,16 +1,15 @@
-FROM python:3.12-slim
+FROM r-docker.repository.avp.ru:443/python:3.12-slim
 
 WORKDIR /app
 
-# Установка системных зависимостей (если понадобятся для сборки некоторых библиотек)
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    build-essential \
-    && rm -rf /var/lib/apt/lists/*
-
 # Копируем зависимости и устанавливаем их
 COPY requirements.txt .
-RUN pip install --no-cache-dir --upgrade pip --trusted-host pypi.org --trusted-host files.pythonhosted.org && \
-    pip install --no-cache-dir -r requirements.txt --trusted-host pypi.org --trusted-host files.pythonhosted.org
+RUN pip install --no-cache-dir --upgrade pip \
+        --index-url https://repository.avp.ru/artifactory/api/pypi/r-pip/simple \
+        --trusted-host repository.avp.ru && \
+    pip install --no-cache-dir -r requirements.txt \
+        --index-url https://repository.avp.ru/artifactory/api/pypi/r-pip/simple \
+        --trusted-host repository.avp.ru
 
 # Копируем исходный код бэкенда
 COPY . .
