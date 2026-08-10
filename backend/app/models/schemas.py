@@ -26,15 +26,15 @@ class TestScenario(BaseModel):
     coverage: List[str] = Field(default_factory=list, description="List of covered requirement IDs (e.g. RQ-01)")
 
 class LLMConfig(BaseModel):
-    provider: str = Field(..., description="LLM provider: 'openai', 'gemini', 'custom'")
-    api_key: Optional[str] = Field(None, description="API Key for the provider")
-    base_url: Optional[str] = Field(None, description="Base URL (only for 'custom' provider)")
+    provider: str = Field("custom", description="LLM provider: 'kaspersky' or 'custom'")
+    api_key: Optional[str] = Field(None, description="API Key for Kaspersky LLM")
+    base_url: Optional[str] = Field(None, description="Base URL for Kaspersky LLM endpoint")
     model: Optional[str] = Field(None, description="Model name selected by user")
 
 class ModelsRequest(BaseModel):
-    provider: str = Field(..., description="LLM provider: 'openai', 'gemini', 'custom'")
-    api_key: str = Field(..., description="API Key for the provider")
-    base_url: Optional[str] = Field(None, description="Base URL (only for 'custom' provider)")
+    provider: str = Field("custom", description="LLM provider: 'kaspersky' or 'custom'")
+    api_key: str = Field(..., description="API Key for Kaspersky LLM")
+    base_url: Optional[str] = Field(None, description="Base URL for Kaspersky LLM endpoint")
 
 class ModelsResponse(BaseModel):
     models: List[str] = Field(..., description="List of available models")

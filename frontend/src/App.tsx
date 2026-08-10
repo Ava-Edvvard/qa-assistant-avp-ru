@@ -38,7 +38,7 @@ const MainLayout: React.FC = () => {
   const [showSettingsModal, setShowSettingsModal] = useState(false);
   const [localProvider, setLocalProvider] = useState(llmProvider);
   const [localApiKey, setLocalApiKey] = useState(llmApiKey);
-  const [localBaseUrl, setLocalBaseUrl] = useState(llmBaseUrl);
+  const [localBaseUrl, setLocalBaseUrl] = useState(llmBaseUrl || 'https://llm.kaspersky-labs.com/v1/');
   const [localModel, setLocalModel] = useState(llmModel);
 
   const [localModelsList, setLocalModelsList] = useState<string[]>([]);
@@ -48,7 +48,7 @@ const MainLayout: React.FC = () => {
   const handleOpenSettings = () => {
     setLocalProvider(llmProvider);
     setLocalApiKey(llmApiKey);
-    setLocalBaseUrl(llmBaseUrl);
+    setLocalBaseUrl(llmBaseUrl || 'https://llm.kaspersky-labs.com/v1/');
     setLocalModel(llmModel);
     setLocalModelsList([]);
     setLocalModelsError(null);

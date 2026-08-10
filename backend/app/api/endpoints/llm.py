@@ -30,13 +30,7 @@ async def list_models(payload: ModelsRequest):
     Returns empty list if the provider does not support model listing (e.g. 404).
     """
     try:
-        if payload.provider == "gemini":
-            base_url = "https://generativelanguage.googleapis.com/v1beta/openai/"
-        elif payload.provider == "openai":
-            base_url = None
-        else: # custom
-            base_url = payload.base_url
-            
+        base_url = payload.base_url or "https://llm.kaspersky-labs.com/v1/"
         client = OpenAI(api_key=payload.api_key, base_url=base_url)
         response = client.models.list()
         model_ids = [m.id for m in response.data]

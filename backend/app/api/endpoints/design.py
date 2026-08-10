@@ -48,7 +48,7 @@ async def parse_requirements(
     llm_config = None
     if llm_api_key and llm_api_key.strip():
         llm_config = LLMConfig(
-            provider=llm_provider or "openai",
+            provider=llm_provider or "custom",
             api_key=llm_api_key,
             base_url=llm_base_url,
             model=llm_model

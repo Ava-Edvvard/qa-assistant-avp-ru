@@ -48,7 +48,7 @@ interface DesignContextType {
   activeLlmName: string;
   isFallbackMock: boolean;
   fallbackError: string | null;
-  
+
   // LLM Config
   llmProvider: string;
   llmApiKey: string;
@@ -67,33 +67,33 @@ interface DesignContextType {
   prevStage: () => void;
   nextStage: () => void;
   resetSession: () => void;
-  
+
   // Stage 1 Actions
   parseRequirements: (text: string, additionalInfo: string, oldScenarios?: string, files?: File[]) => Promise<void>;
-  
+
   // Stage 2 Actions
   setRequirements: (reqs: Requirement[]) => void;
   addRequirement: (desc: string) => void;
   editRequirement: (id: string, desc: string) => void;
   deleteRequirement: (id: string) => void;
-  
+
   // Stage 3 Actions
   fetchQuestions: () => Promise<void>;
   submitAnswer: (questionId: string, answer: string) => void;
   skipQuestion: (questionId: string) => void;
   updateAnswer: (questionId: string, answer: string) => void;
   resetAnswer: (questionId: string) => void;
-  
+
   // Stage 4 Actions
   generateTestScenarios: () => Promise<void>;
   setScenarios: (scenarios: TestScenario[]) => void;
   addScenario: (scenario: TestScenario) => void;
   editScenario: (id: string, updated: Partial<TestScenario>) => void;
   deleteScenario: (id: string) => void;
-  
+
   // Stage 5 Actions (Existing Design)
   compareTestScenarios: () => Promise<void>;
-  
+
   clearFallbackMock: () => void;
 }
 
@@ -113,7 +113,7 @@ export const DesignProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   const [oldScenariosText, setOldScenariosText] = useState<string>('');
   const [additionalInfoText, setAdditionalInfoText] = useState<string>('');
   const [rawRequirementsText, setRawRequirementsText] = useState<string>('');
-  
+
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [isFallbackMock, setIsFallbackMock] = useState<boolean>(false);
@@ -141,14 +141,14 @@ export const DesignProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       return 'Mock (Аварийный режим)';
     }
     if (llmApiKey && llmApiKey.trim()) {
-      const providerName = llmProvider === 'openai' ? 'OpenAI' : (llmProvider === 'gemini' ? 'Gemini' : 'Kaspersky');
+      const providerName = llmProvider === 'custom' ? 'Kaspersky' : llmProvider;
       const modelName = llmModel || 'default';
       return `${providerName} (${modelName})`;
     } else if (serverLlmInfo) {
       if (serverLlmInfo.is_mock) {
         return 'Mock (Локальная заглушка)';
       }
-      const providerName = serverLlmInfo.provider === 'openai' ? 'OpenAI' : (serverLlmInfo.provider === 'gemini' ? 'Gemini' : 'Kaspersky');
+      const providerName = serverLlmInfo.provider === 'custom' ? 'Kaspersky' : serverLlmInfo.provider;
       return `${providerName} (${serverLlmInfo.model})`;
     }
     return 'Загрузка...';
@@ -157,11 +157,14 @@ export const DesignProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   // LLM Config state
   const [llmProvider, setLlmProviderState] = useState<string>(() => {
     const saved = localStorage.getItem('llm_provider');
-    return (saved && saved !== 'openai' && saved !== 'gemini') ? saved : 'custom';
+    return saved || 'custom';
   });
   const [llmApiKey, setLlmApiKeyState] = useState<string>(() => localStorage.getItem('llm_api_key') || '');
-  const [llmBaseUrl, setLlmBaseUrlState] = useState<string>(() => localStorage.getItem('llm_base_url') || 'https://llm.kaspersky-labs.com/v1/');
-  const [llmModel, setLlmModelState] = useState<string>(() => localStorage.getItem('llm_model') || 'llama-3.3-70B-instruct');
+  const [llmBaseUrl, setLlmBaseUrlState] = useState<string>(() => {
+    const saved = localStorage.getItem('llm_base_url');
+    return (saved && saved.trim()) ? saved : 'https://llm.kaspersky-labs.com/v1/';
+  });
+  const [llmModel, setLlmModelState] = useState<string>(() => localStorage.getItem('llm_model') || '');
 
   const setLlmProvider = (val: string) => {
     setLlmProviderState(val);
@@ -261,7 +264,7 @@ export const DesignProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     const formData = new FormData();
     formData.append('requirements_text', text);
     if (additionalInfo) formData.append('additional_info', additionalInfo);
-    
+
     if (files) {
       files.forEach((file) => {
         formData.append('files', file);
@@ -406,17 +409,17 @@ export const DesignProvider: React.FC<{ children: React.ReactNode }> = ({ childr
           model: llmModel ? llmModel.trim() : null
         } : null
       });
-      
+
       const generatedScenarios = response.data.scenarios;
-      
+
       // Update requirements cases count based on coverage
       const updatedReqs = requirements.map((req) => {
-        const matchingCasesCount = generatedScenarios.filter((sc: TestScenario) => 
+        const matchingCasesCount = generatedScenarios.filter((sc: TestScenario) =>
           sc.coverage.includes(req.id)
         ).length;
         return { ...req, cases_count: matchingCasesCount };
       });
-      
+
       setRequirementsState(updatedReqs);
       setScenariosState(generatedScenarios);
       if (response.data.is_mock && response.data.error_message) {
@@ -436,7 +439,7 @@ export const DesignProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
   const setScenarios = (newScenarios: TestScenario[]) => {
     setScenariosState(newScenarios);
-    
+
     // Recalculate requirements cases count
     const updatedReqs = requirements.map((req) => {
       const count = newScenarios.filter((sc) => sc.coverage.includes(req.id)).length;
@@ -524,32 +527,32 @@ export const DesignProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         setLlmBaseUrl,
         setLlmModel,
         fetchModels,
-        
+
         startNewDesign,
         startExistingDesign,
         setStage,
         prevStage,
         nextStage,
         resetSession,
-        
+
         parseRequirements,
         setRequirements,
         addRequirement,
         editRequirement,
         deleteRequirement,
-        
+
         fetchQuestions,
         submitAnswer,
         skipQuestion,
         updateAnswer,
         resetAnswer,
-        
+
         generateTestScenarios,
         setScenarios,
         addScenario,
         editScenario,
         deleteScenario,
-        
+
         compareTestScenarios,
         clearFallbackMock,
       }}

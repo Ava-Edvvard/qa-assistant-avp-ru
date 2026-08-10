@@ -1,11 +1,10 @@
-FROM r-docker.repository.avp.ru:443/node:20-slim
+FROM node:20-slim
 
 WORKDIR /app
 
 # Копируем package.json и устанавливаем зависимости
 COPY package.json ./
-
-RUN yarn config set strict-ssl false && yarn config set registry https://r-docker.repository.avp.ru/artifactory/api/npm/r-npm/ && yarn install --network-timeout 600000
+RUN yarn config set strict-ssl false && yarn install --network-timeout 600000
 
 # Копируем исходный код фронтенда
 COPY . .

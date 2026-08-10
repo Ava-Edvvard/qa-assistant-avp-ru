@@ -44,7 +44,7 @@ class LLMService:
         self.client = None
         self.model = ""
         
-        if self.provider == "custom":
+        if self.provider in ("custom", "kaspersky"):
             custom_key = settings.CUSTOM_API_KEY
             custom_url = settings.CUSTOM_BASE_URL
             custom_model = settings.CUSTOM_MODEL
@@ -60,7 +60,7 @@ class LLMService:
         if self.is_mock:
             logger.warning(
                 f"Using Mock LLM responses (Provider: {self.provider}). "
-                "Configure valid CUSTOM_API_KEY in .env to enable real Kaspersky LLM integration."
+                "Provide valid CUSTOM_API_KEY environment variable or enter it in the web UI to enable real Kaspersky LLM integration."
             )
 
     def _get_client_and_model(self, llm_config: Optional[LLMConfig] = None):
@@ -76,7 +76,7 @@ class LLMService:
                 return None, "", True
 
             try:
-                if provider == "custom":
+                if provider in ("custom", "kaspersky"):
                     client = OpenAI(
                         api_key=api_key,
                         base_url=llm_config.base_url or "https://llm.kaspersky-labs.com/v1/"
