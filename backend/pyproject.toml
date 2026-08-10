@@ -1,0 +1,8 @@
+[tool.ruff]
+line-length = 120
+target-version = "py312"
+
+[tool.ruff.lint]
+ignore = [
+    "B008", # Allow FastAPI Form/File/Depends default argument calls
+]

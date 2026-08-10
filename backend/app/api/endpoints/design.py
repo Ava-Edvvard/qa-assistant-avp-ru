@@ -13,7 +13,7 @@ logger = logging.getLogger("app.api.endpoints.design")
 async def parse_requirements(
     requirements_text: str = Form(...),
     additional_info: str | None = Form(None),
-    files: list[UploadFile] | None = File(None),
+    files: list[UploadFile] | None = File(None),  # noqa: B008
     llm_provider: str | None = Form(None),
     llm_api_key: str | None = Form(None),
     llm_base_url: str | None = Form(None),
