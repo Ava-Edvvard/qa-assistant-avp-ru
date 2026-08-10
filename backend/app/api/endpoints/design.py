@@ -1,9 +1,10 @@
 import logging
-from fastapi import APIRouter, UploadFile, File, Form, HTTPException
-from typing import List, Optional
-from app.models.schemas import RequirementsResponse, Requirement, LLMConfig
-from app.services.parser import parser_service
+
+from fastapi import APIRouter, File, Form, UploadFile
+
+from app.models.schemas import LLMConfig, RequirementsResponse
 from app.services.llm_service import llm_service
+from app.services.parser import parser_service
 
 router = APIRouter()
 logger = logging.getLogger("app.api.endpoints.design")
@@ -11,12 +12,12 @@ logger = logging.getLogger("app.api.endpoints.design")
 @router.post("/parse-requirements", response_model=RequirementsResponse)
 async def parse_requirements(
     requirements_text: str = Form(...),
-    additional_info: Optional[str] = Form(None),
-    files: Optional[List[UploadFile]] = File(None),
-    llm_provider: Optional[str] = Form(None),
-    llm_api_key: Optional[str] = Form(None),
-    llm_base_url: Optional[str] = Form(None),
-    llm_model: Optional[str] = Form(None)
+    additional_info: str | None = Form(None),
+    files: list[UploadFile] | None = File(None),
+    llm_provider: str | None = Form(None),
+    llm_api_key: str | None = Form(None),
+    llm_base_url: str | None = Form(None),
+    llm_model: str | None = Form(None)
 ):
     """
     Stage 1: Receives raw requirements text, additional info, and files (Excel or images).
@@ -54,7 +55,7 @@ async def parse_requirements(
             model=llm_model
         )
         
-    client, model, is_mock = llm_service._get_client_and_model(llm_config)
+    _client, _model, is_mock = llm_service._get_client_and_model(llm_config)
     if is_mock:
         requirements = llm_service._mock_parse_requirements(combined_text, additional_info)
         return RequirementsResponse(requirements=requirements, is_mock=True)

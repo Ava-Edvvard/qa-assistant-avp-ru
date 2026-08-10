@@ -1,7 +1,7 @@
 import io
 import logging
+
 import pandas as pd
-from typing import List
 
 logger = logging.getLogger("app.services.parser")
 
@@ -31,7 +31,7 @@ class DocumentParser:
             return "\n\n".join(sheets_text)
         except Exception as e:
             logger.error(f"Error parsing Excel file: {e}")
-            return f"[Ошибка парсинга Excel-файла: {str(e)}]"
+            return f"[Ошибка парсинга Excel-файла: {e!s}]"
 
     @staticmethod
     def parse_image(file_bytes: bytes, filename: str) -> str:

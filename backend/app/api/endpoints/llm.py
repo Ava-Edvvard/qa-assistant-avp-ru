@@ -1,11 +1,17 @@
 import logging
+
 from fastapi import APIRouter, HTTPException
 from openai import OpenAI
+
 from app.models.schemas import (
-    QuestionsGenerationRequest, QuestionsResponse,
-    ScenariosGenerationRequest, ScenariosResponse,
-    CompareRequest, CompareResponse,
-    ModelsRequest, ModelsResponse
+    CompareRequest,
+    CompareResponse,
+    ModelsRequest,
+    ModelsResponse,
+    QuestionsGenerationRequest,
+    QuestionsResponse,
+    ScenariosGenerationRequest,
+    ScenariosResponse,
 )
 from app.services.llm_service import llm_service
 
@@ -39,14 +45,14 @@ async def list_models(payload: ModelsRequest):
         err_str = str(e).lower()
         if "404" in err_str or "not found" in err_str or "not implemented" in err_str:
             return ModelsResponse(models=[])
-        raise HTTPException(status_code=400, detail=f"Ошибка получения списка моделей: {str(e)}")
+        raise HTTPException(status_code=400, detail=f"Ошибка получения списка моделей: {e!s}")
 
 @router.post("/generate-questions", response_model=QuestionsResponse)
 async def generate_questions(payload: QuestionsGenerationRequest):
     """
     Stage 3: Takes requirements list and generates a list of clarifying questions using LLM.
     """
-    client, model, is_mock = llm_service._get_client_and_model(payload.llm_config)
+    _client, _model, is_mock = llm_service._get_client_and_model(payload.llm_config)
     if is_mock:
         questions = llm_service._mock_generate_questions(payload.requirements)
         return QuestionsResponse(questions=questions, is_mock=True)
@@ -64,7 +70,7 @@ async def generate_scenarios(payload: ScenariosGenerationRequest):
     """
     Stage 4: Takes requirements list and answers, then generates structured test scenarios.
     """
-    client, model, is_mock = llm_service._get_client_and_model(payload.llm_config)
+    _client, _model, is_mock = llm_service._get_client_and_model(payload.llm_config)
     if is_mock:
         scenarios = llm_service._mock_generate_scenarios(payload.requirements, payload.answers)
         return ScenariosResponse(scenarios=scenarios, is_mock=True)
@@ -82,7 +88,7 @@ async def compare_scenarios(payload: CompareRequest):
     """
     Stage 5 (Existing Design): Compares user's original/old test scenarios with the new ones.
     """
-    client, model, is_mock = llm_service._get_client_and_model(payload.llm_config)
+    _client, _model, is_mock = llm_service._get_client_and_model(payload.llm_config)
     
     # helper for computing comparison lists
     def compute_compare_ids():

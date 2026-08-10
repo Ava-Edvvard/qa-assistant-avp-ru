@@ -1,11 +1,18 @@
 import json
 import logging
-import time
 import threading
-from typing import List, Optional
+import time
+
 from openai import OpenAI
+
 from app.core.config import settings
-from app.models.schemas import Requirement, ClarifyingQuestion, TestScenario, UserAnswer, LLMConfig
+from app.models.schemas import (
+    ClarifyingQuestion,
+    LLMConfig,
+    Requirement,
+    TestScenario,
+    UserAnswer,
+)
 
 logger = logging.getLogger("app.services.llm_service")
 
@@ -63,7 +70,7 @@ class LLMService:
                 "Provide valid CUSTOM_API_KEY environment variable or enter it in the web UI to enable real Kaspersky LLM integration."
             )
 
-    def _get_client_and_model(self, llm_config: Optional[LLMConfig] = None):
+    def _get_client_and_model(self, llm_config: LLMConfig | None = None):
         """
         Dynamically returns (client, model, is_mock) based on config,
         or falls back to env-configured defaults.
@@ -88,7 +95,7 @@ class LLMService:
                 
         return self.client, self.model, self.is_mock
 
-    def parse_requirements(self, text: str, additional_info: Optional[str] = None, llm_config: Optional[LLMConfig] = None) -> List[Requirement]:
+    def parse_requirements(self, text: str, additional_info: str | None = None, llm_config: LLMConfig | None = None) -> list[Requirement]:
         """
         Parses raw requirement text into a list of structured requirements (RQ-01, RQ-02...).
         """
@@ -134,9 +141,9 @@ class LLMService:
             return [Requirement(id=item["id"], description=item["description"], cases_count=0) for item in data]
         except Exception as e:
             logger.error(f"Error calling OpenAI parse_requirements: {e}.")
-            raise e
+            raise
 
-    def generate_questions(self, requirements: List[Requirement], llm_config: Optional[LLMConfig] = None) -> List[ClarifyingQuestion]:
+    def generate_questions(self, requirements: list[Requirement], llm_config: LLMConfig | None = None) -> list[ClarifyingQuestion]:
         """
         Generates clarifying questions for requirements if ambiguities are found.
         """
@@ -174,9 +181,9 @@ class LLMService:
             return [ClarifyingQuestion(id=item["id"], requirement_id=item["requirement_id"], question=item["question"]) for item in data]
         except Exception as e:
             logger.error(f"Error calling OpenAI generate_questions: {e}.")
-            raise e
+            raise
 
-    def generate_scenarios(self, requirements: List[Requirement], answers: List[UserAnswer], llm_config: Optional[LLMConfig] = None) -> List[TestScenario]:
+    def generate_scenarios(self, requirements: list[Requirement], answers: list[UserAnswer], llm_config: LLMConfig | None = None) -> list[TestScenario]:
         """
         Generates structured test scenarios based on requirements and clarifying answers.
         """
@@ -236,9 +243,9 @@ class LLMService:
             ]
         except Exception as e:
             logger.error(f"Error calling OpenAI generate_scenarios: {e}.")
-            raise e
+            raise
 
-    def compare_scenarios(self, old_text: str, new_cases: List[TestScenario], llm_config: Optional[LLMConfig] = None) -> str:
+    def compare_scenarios(self, old_text: str, new_cases: list[TestScenario], llm_config: LLMConfig | None = None) -> str:
         """
         Compares old test cases text with newly generated test cases and returns summary of changes.
         """
@@ -306,11 +313,11 @@ class LLMService:
             return response.choices[0].message.content.strip()
         except Exception as e:
             logger.error(f"Error calling OpenAI compare_scenarios: {e}.")
-            raise e
+            raise
 
     # --- MOCK FALLBACKS ---
 
-    def _mock_parse_requirements(self, text: str, additional_info: Optional[str] = None) -> List[Requirement]:
+    def _mock_parse_requirements(self, text: str, additional_info: str | None = None) -> list[Requirement]:
         import re
         raw_lines = [line.strip() for line in text.split("\n") if line.strip() and not line.strip().startswith("#")]
         
@@ -346,7 +353,7 @@ class LLMService:
         return reqs
 
 
-    def _mock_generate_questions(self, requirements: List[Requirement]) -> List[ClarifyingQuestion]:
+    def _mock_generate_questions(self, requirements: list[Requirement]) -> list[ClarifyingQuestion]:
         questions = []
         for i, req in enumerate(requirements[:3]):
             questions.append(ClarifyingQuestion(
@@ -356,7 +363,7 @@ class LLMService:
             ))
         return questions
 
-    def _mock_generate_scenarios(self, requirements: List[Requirement], answers: List[UserAnswer]) -> List[TestScenario]:
+    def _mock_generate_scenarios(self, requirements: list[Requirement], answers: list[UserAnswer]) -> list[TestScenario]:
         scenarios = []
         # Generate scenarios based on the requirements
         for i, req in enumerate(requirements):
@@ -395,7 +402,7 @@ class LLMService:
             
         return scenarios
 
-    def _mock_compare_scenarios(self, old_text: str, new_cases: List[TestScenario]) -> str:
+    def _mock_compare_scenarios(self, old_text: str, new_cases: list[TestScenario]) -> str:
         p1_new = sum(1 for tc in new_cases if tc.priority in ("П1", "1", "1 приоритет"))
         p2_new = sum(1 for tc in new_cases if tc.priority in ("П2", "2", "2 приоритет"))
         p3_new = sum(1 for tc in new_cases if tc.priority in ("П3", "3", "3 приоритет"))

@@ -1,5 +1,6 @@
+
 from pydantic import BaseModel, Field
-from typing import List, Optional
+
 
 class Requirement(BaseModel):
     id: str = Field(..., description="Unique requirement ID, e.g. RQ-01")
@@ -20,63 +21,63 @@ class TestScenario(BaseModel):
     id: str = Field(..., description="Unique test case ID, e.g. TC-001")
     name: str = Field(..., description="Test case name")
     priority: str = Field("П2", description="Priority level: П1 (Critical), П2 (Important), П3 (Low)")
-    preconditions: List[str] = Field(default_factory=list, description="Preconditions list")
-    steps: List[str] = Field(default_factory=list, description="Numbered steps list")
-    expected_results: List[str] = Field(default_factory=list, description="Numbered expected results list")
-    coverage: List[str] = Field(default_factory=list, description="List of covered requirement IDs (e.g. RQ-01)")
+    preconditions: list[str] = Field(default_factory=list, description="Preconditions list")
+    steps: list[str] = Field(default_factory=list, description="Numbered steps list")
+    expected_results: list[str] = Field(default_factory=list, description="Numbered expected results list")
+    coverage: list[str] = Field(default_factory=list, description="List of covered requirement IDs (e.g. RQ-01)")
 
 class LLMConfig(BaseModel):
     provider: str = Field("custom", description="LLM provider: 'kaspersky' or 'custom'")
-    api_key: Optional[str] = Field(None, description="API Key for Kaspersky LLM")
-    base_url: Optional[str] = Field(None, description="Base URL for Kaspersky LLM endpoint")
-    model: Optional[str] = Field(None, description="Model name selected by user")
+    api_key: str | None = Field(None, description="API Key for Kaspersky LLM")
+    base_url: str | None = Field(None, description="Base URL for Kaspersky LLM endpoint")
+    model: str | None = Field(None, description="Model name selected by user")
 
 class ModelsRequest(BaseModel):
     provider: str = Field("custom", description="LLM provider: 'kaspersky' or 'custom'")
     api_key: str = Field(..., description="API Key for Kaspersky LLM")
-    base_url: Optional[str] = Field(None, description="Base URL for Kaspersky LLM endpoint")
+    base_url: str | None = Field(None, description="Base URL for Kaspersky LLM endpoint")
 
 class ModelsResponse(BaseModel):
-    models: List[str] = Field(..., description="List of available models")
+    models: list[str] = Field(..., description="List of available models")
 
 class AnalysisRequest(BaseModel):
     requirements_text: str
-    additional_info: Optional[str] = None
-    old_scenarios_text: Optional[str] = None
+    additional_info: str | None = None
+    old_scenarios_text: str | None = None
 
 class RequirementsResponse(BaseModel):
-    requirements: List[Requirement]
-    is_mock: Optional[bool] = False
-    error_message: Optional[str] = None
+    requirements: list[Requirement]
+    is_mock: bool | None = False
+    error_message: str | None = None
 
 class QuestionsGenerationRequest(BaseModel):
-    requirements: List[Requirement]
-    llm_config: Optional[LLMConfig] = None
+    requirements: list[Requirement]
+    llm_config: LLMConfig | None = None
 
 class QuestionsResponse(BaseModel):
-    questions: List[ClarifyingQuestion]
-    is_mock: Optional[bool] = False
-    error_message: Optional[str] = None
+    questions: list[ClarifyingQuestion]
+    is_mock: bool | None = False
+    error_message: str | None = None
 
 class ScenariosGenerationRequest(BaseModel):
-    requirements: List[Requirement]
-    answers: List[UserAnswer]
-    llm_config: Optional[LLMConfig] = None
+    requirements: list[Requirement]
+    answers: list[UserAnswer]
+    llm_config: LLMConfig | None = None
 
 class ScenariosResponse(BaseModel):
-    scenarios: List[TestScenario]
-    is_mock: Optional[bool] = False
-    error_message: Optional[str] = None
+    scenarios: list[TestScenario]
+    is_mock: bool | None = False
+    error_message: str | None = None
 
 class CompareRequest(BaseModel):
     old_scenarios_text: str
-    new_scenarios: List[TestScenario]
-    llm_config: Optional[LLMConfig] = None
+    new_scenarios: list[TestScenario]
+    llm_config: LLMConfig | None = None
 
 class CompareResponse(BaseModel):
     changes_summary: str = Field(..., description="Detailed textual diff/report of changes")
-    added: List[str] = Field(default_factory=list, description="List of added scenario IDs")
-    removed: List[str] = Field(default_factory=list, description="List of removed scenario IDs")
-    modified: List[str] = Field(default_factory=list, description="List of modified scenario IDs")
-    is_mock: Optional[bool] = False
-    error_message: Optional[str] = None
+    added: list[str] = Field(default_factory=list, description="List of added scenario IDs")
+    removed: list[str] = Field(default_factory=list, description="List of removed scenario IDs")
+    modified: list[str] = Field(default_factory=list, description="List of modified scenario IDs")
+    is_mock: bool | None = False
+    error_message: str | None = None
