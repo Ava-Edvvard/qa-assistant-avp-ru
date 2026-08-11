@@ -20,7 +20,7 @@ class RateLimiter:
     def __init__(self, max_calls: int = 3, period: float = 60.0):
         self.max_calls = max_calls
         self.period = period
-        self.calls = []
+        self.calls: list[float] = []
         self.lock = threading.Lock()
 
     def wait_if_needed(self):
