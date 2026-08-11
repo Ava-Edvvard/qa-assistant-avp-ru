@@ -1,4 +1,4 @@
-FROM r-docker.repository.avp.ru:443/python:3.12-slim
+FROM r-docker.repository.avp.ru:443/python:3.13-slim
 
 WORKDIR /app
 

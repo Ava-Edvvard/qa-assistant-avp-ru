@@ -8,7 +8,7 @@
 
 ## Стек технологий
 
-*   **Backend**: Python 3.12, FastAPI, Pydantic, Pandas, OpenAI SDK (интегрировано с Kaspersky LLM).
+*   **Backend**: Python 3.13, FastAPI, Pydantic, Pandas, OpenAI SDK (интегрировано с Kaspersky LLM).
 *   **Frontend**: React (Vite), TypeScript, Vanilla CSS (Premium Glassmorphism), Lucide Icons, Axios.
 *   **Контейнеризация**: Docker, Docker Compose.
 
